@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
@@ -19,6 +20,14 @@ public class ItemRepository {
 
     public Optional<Item> findById(long id) {
         return Optional.ofNullable(items.get(id));
+    }
+
+    public Collection<Item> findByString(String text) {
+        return items.values().stream()
+                .filter(Item::isAvailable)
+                .filter(item -> StringUtils.containsIgnoreCase(item.getName(), text)
+                        || StringUtils.containsIgnoreCase(item.getDescription(), text))
+                .toList();
     }
 
     public Item save(Item item) {

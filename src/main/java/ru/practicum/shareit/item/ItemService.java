@@ -12,6 +12,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -56,6 +57,13 @@ public class ItemService {
     public Collection<ItemDto> findAllForUser(Long userId) {
         validateUser(userId);
         return repository.findAllForUser(userId).stream().map(mapper::modelToDto).toList();
+    }
+
+    public Collection<ItemDto> findByString(String text) {
+        if (text == null || text.isBlank()) {
+            return List.of();
+        }
+        return repository.findByString(text).stream().map(mapper::modelToDto).toList();
     }
 
     private void validateUser(Long userId) {
