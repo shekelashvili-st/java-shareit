@@ -13,13 +13,19 @@ import ru.practicum.shareit.exception.IdNotFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleBadRequest(EmailAlreadyExistsException e) {
+        return new ApiError(e.getMessage());
+    }
+
     @ExceptionHandler({IdNotFoundException.class, IdMismatchException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleIdNotFound(RuntimeException e) {
         return new ApiError(e.getMessage());
     }
 
-    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class, EmailAlreadyExistsException.class})
+    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleValidation(Throwable e) {
         return new ApiError(e.getMessage());
