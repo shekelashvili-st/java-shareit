@@ -27,9 +27,11 @@ public class UserService {
         String email = user.getEmail();
         if (email != null) {
             validateEmail(email);
+            foundUser.setEmail(user.getEmail());
         }
-        foundUser.setName(user.getName());
-        foundUser.setEmail(user.getEmail());
+        if (user.getName() != null) {
+            foundUser.setName(user.getName());
+        }
         User userFromDb = repository.save(foundUser);
         return mapper.modelToDto(userFromDb);
     }

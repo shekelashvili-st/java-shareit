@@ -16,7 +16,7 @@ public class UserRepository {
         if (user.getId() == null) {
             user.setId(++count);
         }
-        users.put(count, user);
+        users.put(user.getId(), user);
         return user;
     }
 
