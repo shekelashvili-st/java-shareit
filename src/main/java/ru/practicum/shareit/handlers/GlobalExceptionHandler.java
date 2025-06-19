@@ -7,14 +7,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.exception.EmailAlreadyExistsException;
+import ru.practicum.shareit.exception.IdMismatchException;
 import ru.practicum.shareit.exception.IdNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler
+    @ExceptionHandler({IdNotFoundException.class, IdMismatchException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handleIdNotFound(IdNotFoundException e) {
+    public ApiError handleIdNotFound(RuntimeException e) {
         return new ApiError(e.getMessage());
     }
 
