@@ -17,13 +17,13 @@ public class ItemController {
     private final ItemService service;
 
     @PostMapping
-    private ItemDto create(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
+    public ItemDto create(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
                            @RequestBody @Valid CreateItemDto item) {
         return service.create(item, userId);
     }
 
     @PatchMapping("/{itemId}")
-    private ItemDto update(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
+    public ItemDto update(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
                            @RequestBody @Valid UpdateItemDto item,
                            @PathVariable Long itemId) {
         return service.update(item, itemId, userId);
@@ -35,7 +35,7 @@ public class ItemController {
     }
 
     @GetMapping
-    private Collection<ItemDto> findAll(@RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+    public Collection<ItemDto> findAll(@RequestHeader(name = "X-Sharer-User-Id") Long userId) {
         return service.findAllForUser(userId);
     }
 
