@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.UpdateItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.util.Collection;
@@ -23,15 +24,15 @@ public class ItemService {
     private final ItemMapper mapper;
 
     public ItemDto create(CreateItemDto item, Long userId) {
-        validateUser(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IdNotFoundException("User with id" + userId + " not found!"));
         Item newItem = mapper.createDtoToModel(item);
-        newItem.setOwnerId(userId);
+        newItem.setOwner(user);
         Item itemFromDb = repository.save(newItem);
         return mapper.modelToDto(itemFromDb);
     }
 
     public ItemDto update(UpdateItemDto item, Long itemId, Long userId) {
-        validateUser(userId);
         Item foundItem = repository.findById(itemId)
                 .orElseThrow(() -> new IdNotFoundException("Item with id " + itemId + " not found!"));
         validateItemOwner(foundItem, userId);
@@ -56,14 +57,15 @@ public class ItemService {
 
     public Collection<ItemDto> findAllForUser(Long userId) {
         validateUser(userId);
-        return repository.findAllForUser(userId).stream().map(mapper::modelToDto).toList();
+        return repository.findAllByOwnerId(userId).stream().map(mapper::modelToDto).toList();
     }
 
     public Collection<ItemDto> findByString(String text) {
         if (text == null || text.isBlank()) {
             return List.of();
         }
-        return repository.findByString(text).stream().map(mapper::modelToDto).toList();
+        return repository.findAllByAvailableIsTrueAndNameContainingOrDescriptionContainingAllIgnoreCase(text, text)
+                .stream().map(mapper::modelToDto).toList();
     }
 
     private void validateUser(Long userId) {
@@ -75,7 +77,7 @@ public class ItemService {
     }
 
     private void validateItemOwner(Item item, Long userId) {
-        if (!Objects.equals(item.getOwnerId(), userId)) {
+        if (!Objects.equals(item.getOwner().getId(), userId)) {
             throw new IdMismatchException("Only the owner can update item information!");
         }
     }
