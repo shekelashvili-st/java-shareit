@@ -8,9 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.exception.EmailAlreadyExistsException;
-import ru.practicum.shareit.exception.IdMismatchException;
-import ru.practicum.shareit.exception.IdNotFoundException;
+import ru.practicum.shareit.exception.*;
 
 @RestControllerAdvice
 @Slf4j
@@ -21,6 +19,30 @@ public class GlobalExceptionHandler {
     public ApiError handleBadRequest(EmailAlreadyExistsException e) {
         String message = e.getMessage();
         log.warn("Email already exists: {}", message);
+        return new ApiError(message);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handlePermissionException(UserPermissionsException e) {
+        String message = e.getMessage();
+        log.warn("User permission exception: {}", message);
+        return new ApiError(message);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleUnavailable(ItemUnavailableException e) {
+        String message = e.getMessage();
+        log.warn("Item unavailable exception: {}", message);
+        return new ApiError(message);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError handleNoItemsOwned(NoItemsOwnedException e) {
+        String message = e.getMessage();
+        log.warn("Item unavailable exception: {}", message);
         return new ApiError(message);
     }
 
