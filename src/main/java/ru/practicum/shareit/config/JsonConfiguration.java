@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking.config;
+package ru.practicum.shareit.config;
 
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
