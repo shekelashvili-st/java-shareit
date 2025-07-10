@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.dto.UpdateItemDto;
 
 import java.util.Collection;
@@ -38,7 +39,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDto> findAll(@RequestHeader(name = "X-Sharer-User-Id") @Positive Long userId) {
+    public Collection<ItemWithBookingsDto> findAll(@RequestHeader(name = "X-Sharer-User-Id") @Positive Long userId) {
         return service.findAllForUser(userId);
     }
 

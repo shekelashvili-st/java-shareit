@@ -2,25 +2,29 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.IdMismatchException;
 import ru.practicum.shareit.exception.IdNotFoundException;
 import ru.practicum.shareit.item.dto.CreateItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.dto.UpdateItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ItemService {
     private final ItemRepository repository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
     private final ItemMapper mapper;
 
     public ItemDto create(CreateItemDto item, Long userId) {
@@ -55,9 +59,31 @@ public class ItemService {
         return mapper.modelToDto(foundItem);
     }
 
-    public Collection<ItemDto> findAllForUser(Long userId) {
+    public Collection<ItemWithBookingsDto> findAllForUser(Long userId) {
         validateUser(userId);
-        return repository.findAllByOwnerId(userId).stream().map(mapper::modelToDto).toList();
+        List<Item> items = repository.findAllByOwnerId(userId);
+        List<ItemWithBookingsDto> dtos = new ArrayList<>();
+        for (Item item : items) {
+            ItemWithBookingsDto dto = mapper.modelToWithBookingsDto(item);
+            List<Timestamp> startTimes = bookingRepository.findAllByItemIdOrderByStart(dto.getId())
+                    .stream().map(Booking::getStart).toList();
+            if (!startTimes.isEmpty()) {
+                int index = Collections.binarySearch(startTimes, Timestamp.from(Instant.now()));
+                if (index < 0) {
+                    index = -index - 1;
+                }
+                if (index == 0) {
+                    dto.setStartNextBooking(startTimes.get(index));
+                } else if (index == startTimes.size()) {
+                    dto.setStartPreviousBooking(startTimes.get(index - 1));
+                } else {
+                    dto.setStartPreviousBooking(startTimes.get(index - 1));
+                    dto.setStartNextBooking(startTimes.get(index));
+                }
+            }
+            dtos.add(dto);
+        }
+        return dtos;
     }
 
     public Collection<ItemDto> findByString(String text) {
