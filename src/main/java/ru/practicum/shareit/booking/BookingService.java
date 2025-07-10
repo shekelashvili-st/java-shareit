@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
@@ -21,6 +22,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BookingService {
 
     private final BookingRepository repository;
@@ -28,6 +30,7 @@ public class BookingService {
     private final ItemRepository itemRepository;
     private final BookingMapper mapper;
 
+    @Transactional
     public BookingDto create(CreateBookingDto booking, Long bookerId) {
         User booker = userRepository.findById(bookerId).orElseThrow(
                 () -> new IdNotFoundException("User with id=" + bookerId + " not found!"));
@@ -44,6 +47,7 @@ public class BookingService {
         return mapper.modelToDto(bookingInRepository);
     }
 
+    @Transactional
     public BookingDto approve(Long bookingId, Long userId, boolean approved) {
         Booking booking = repository.findById(bookingId).orElseThrow(
                 () -> new IdNotFoundException("Booking with id" + bookingId + " not found!"));
