@@ -20,6 +20,8 @@ import ru.practicum.shareit.user.UserRepository;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,28 +72,38 @@ public class ItemService {
 
     public Collection<ItemWithBookingsDto> findAllForUser(Long userId) {
         validateUser(userId);
-        List<Item> items = repository.findAllByOwnerId(userId);
+        Map<Long, Item> itemsMap = repository.findAllByOwnerId(userId)
+                .stream()
+                .collect(Collectors.toMap(Item::getId, Function.identity()));
+        Map<Long, List<Comment>> commentMap = commentRepository.findAllByItemIdIn(itemsMap.keySet())
+                .stream()
+                .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
+        Map<Long, List<Booking>> bookingsMap = bookingRepository.findAllByItemIdInOrderByStart(itemsMap.keySet())
+                .stream()
+                .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
         List<ItemWithBookingsDto> dtos = new ArrayList<>();
-        for (Item item : items) {
-            ItemWithBookingsDto dto = mapper.modelToWithBookingsDto(item);
-            List<Booking> bookings = bookingRepository.findAllByItemIdOrderByStart(dto.getId());
-            List<Timestamp> startTimes = bookings
-                    .stream().map(Booking::getStart).toList();
-            if (!startTimes.isEmpty()) {
-                int index = Collections.binarySearch(startTimes, Timestamp.from(Instant.now()));
-                if (index < 0) {
-                    index = -index - 1;
-                }
-                if (index == 0) {
-                    dto.setNextBooking(bookings.get(index));
-                } else if (index == startTimes.size()) {
-                    dto.setLastBooking(bookings.get(index - 1));
-                } else {
-                    dto.setLastBooking(bookings.get(index - 1));
-                    dto.setNextBooking(bookings.get(index));
+        for (Long itemId : itemsMap.keySet()) {
+            ItemWithBookingsDto dto = mapper.modelToWithBookingsDto(itemsMap.get(itemId));
+            List<Booking> bookings = bookingsMap.get(itemId);
+            if (bookings != null) {
+                List<Timestamp> startTimes = bookings
+                        .stream().map(Booking::getStart).toList();
+                if (!startTimes.isEmpty()) {
+                    int index = Collections.binarySearch(startTimes, Timestamp.from(Instant.now()));
+                    if (index < 0) {
+                        index = -index - 1;
+                    }
+                    if (index == 0) {
+                        dto.setNextBooking(bookings.get(index));
+                    } else if (index == startTimes.size()) {
+                        dto.setLastBooking(bookings.get(index - 1));
+                    } else {
+                        dto.setLastBooking(bookings.get(index - 1));
+                        dto.setNextBooking(bookings.get(index));
+                    }
                 }
             }
-            dto.setComments(commentRepository.findAllByItemId(item.getId()));
+            dto.setComments(commentMap.get(itemId));
             dtos.add(dto);
         }
         return dtos;
