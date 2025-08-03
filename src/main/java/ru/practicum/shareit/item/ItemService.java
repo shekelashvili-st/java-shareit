@@ -14,6 +14,8 @@ import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -31,6 +33,7 @@ public class ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository requestRepository;
     private final ItemMapper mapper;
     private final CommentMapper commentMapper;
 
@@ -38,8 +41,14 @@ public class ItemService {
     public ItemDto create(CreateItemDto item, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IdNotFoundException("User with id" + userId + " not found!"));
+
+        Long requestId = item.getRequestId();
+        ItemRequest itemRequest = requestId == null ? null : requestRepository.findById(item.getRequestId())
+                .orElseThrow(() -> new IdNotFoundException("Request with id" + item.getRequestId() + " not found!"));
         Item newItem = mapper.createDtoToModel(item);
+
         newItem.setOwner(user);
+        newItem.setItemRequest(itemRequest);
         Item itemFromDb = repository.save(newItem);
         return mapper.modelToDto(itemFromDb);
     }
