@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Getter
 @NoArgsConstructor
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class BookItemRequestDto {
     private long itemId;
     @FutureOrPresent
-    private LocalDateTime start;
+    private Timestamp start;
     @Future
-    private LocalDateTime end;
+    private Timestamp end;
 }
