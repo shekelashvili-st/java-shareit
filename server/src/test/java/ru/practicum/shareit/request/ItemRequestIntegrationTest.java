@@ -104,7 +104,7 @@ public class ItemRequestIntegrationTest {
         UserDto user1 = createUser();
         CreateItemRequestDto newRequest = new CreateItemRequestDto();
         newRequest.setDescription("desc");
-        ItemRequestDto request = service.create(newRequest, user1.getId());
+        service.create(newRequest, user1.getId());
 
         List<ItemRequestDto> foundRequest = service.findAll(user1.getId());
         assertThat(null, foundRequest.isEmpty());
@@ -117,7 +117,7 @@ public class ItemRequestIntegrationTest {
         CreateItemRequestDto newRequest = new CreateItemRequestDto();
         newRequest.setDescription("desc");
         ItemRequestDto request = service.create(newRequest, user1.getId());
-        ItemRequestDto request2 = service.create(newRequest, user2.getId());
+        service.create(newRequest, user2.getId());
         CreateItemDto newItem = new CreateItemDto();
         newItem.setName("name");
         newItem.setAvailable(true);

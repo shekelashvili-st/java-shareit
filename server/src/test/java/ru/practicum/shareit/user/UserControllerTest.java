@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.exception.EmailAlreadyExistsException;
 import ru.practicum.shareit.exception.IdNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -50,6 +51,22 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.id", is(createDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(createDto.getName())))
                 .andExpect(jsonPath("$.email", is(createDto.getEmail())));
+    }
+
+    @Test
+    void testSaveUserDuplicateEmail() throws Exception {
+        UserDto createDto = new UserDto();
+        createDto.setId(1L);
+        createDto.setName("name");
+        createDto.setEmail("email@email.com");
+        when(service.create(any())).thenThrow(EmailAlreadyExistsException.class);
+
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(createDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
